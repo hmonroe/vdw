@@ -10,6 +10,7 @@
 #include <cstdlib>
 using namespace std;
 
+
 void writeBestPrimes(long long candidateprime, long long bestprimes[100][100]) {
 	cout << "Saving:" << candidateprime << endl;
 	ofstream outputfile;
