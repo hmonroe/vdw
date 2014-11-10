@@ -25,6 +25,7 @@ void writeBestPrimes(long long candidateprime, long long bestprimes[100][100]) {
 		}
 		if (outputfile.is_open()) {
 			outputfile << endl;
+
 		}
 	}
 	outputfile.close();
