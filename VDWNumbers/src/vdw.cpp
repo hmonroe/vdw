@@ -11,8 +11,7 @@ using namespace std;
 bool verbose = false;
 
 void writeBestPrimes(long long candidateprime, long long bestprimes[100][100]) {
-	if (verbose)
-		cout << "Saving:" << candidateprime << endl;
+	cout << "Saving:" << candidateprime << endl;
 	ofstream outputfile;
 	outputfile.open("vdwtable.csv");
 	if (outputfile.is_open())
