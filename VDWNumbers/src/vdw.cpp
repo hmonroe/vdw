@@ -10,7 +10,8 @@
 using namespace std;
 bool verbose = false;
 
-void writeBestPrimes(long long candidateprime, long long bestprimes[100][100]) {
+void writeBestPrimes(long long candidateprime, long long bestprimes[100][100],
+		long long bestbounds[100][100]) {
 	cout << "Saving:" << candidateprime << endl;
 	ofstream outputfile;
 	outputfile.open("vdwtable.csv");
@@ -23,15 +24,23 @@ void writeBestPrimes(long long candidateprime, long long bestprimes[100][100]) {
 				outputfile << bestprimes[color][lengths] << ",";
 			}
 		}
-		if (outputfile.is_open()) {
-			outputfile << endl;
-
+		outputfile << endl;
+	}
+	outputfile << "-1" << endl;
+	for (int lengths = 3; lengths < 20; lengths++) {
+		for (int color = 2; color < 10; color++) {
+			if (outputfile.is_open()) {
+				outputfile << (bestprimes[color][lengths] * (lengths-1)+1) << ",";
+//				outputfile << bestbounds[color][lengths] << ",";
+			}
 		}
+		outputfile << endl;
 	}
 	outputfile.close();
 }
 
-long long readBestPrimes(long long bestprimes[100][100]) {
+long long readBestPrimes(long long bestprimes[100][100],
+		long long bestbounds[100][100]) {
 	ifstream inputfile;
 	inputfile.open("vdwtable.csv");
 	long long startrange = 3;
@@ -47,21 +56,33 @@ long long readBestPrimes(long long bestprimes[100][100]) {
 		}
 		int lengths = 3;
 		int color = 2;
+		bool foundBestBounds = false;
 		while (inputfile) {
 			string s;
 			if (!getline(inputfile, s)) {
 				break;
 			}
 			istringstream ss(s);
+			cout<<"Line:"<<s<<endl;
 			while (ss) {
 				if (!getline(ss, s, ',')) {
 					color = 2;
 					break;
 				}
-				bestprimes[color][lengths] = atoi(s.c_str());
+				if(atoi(s.c_str())==-1) {
+					foundBestBounds = true;
+					lengths = 2;
+					continue;
+				}
+				if (!foundBestBounds)
+					bestprimes[color][lengths] = atoi(s.c_str());
+				else {
+					bestbounds[color][lengths] = atoi(s.c_str());
+				}
 				color++;
 			}
 			lengths++;
+
 		}
 		inputfile.close();
 	} else {
@@ -84,9 +105,9 @@ bool isPrime(long long candidateprime) {
 }
 
 long long writeEveryThousand(long long candidateprime, long long threshold,
-		long long bestprimes[100][100]) {
+		long long bestprimes[100][100], long long bestbounds[100][100]) {
 	if (candidateprime > threshold) {
-		writeBestPrimes(candidateprime, bestprimes);
+		writeBestPrimes(candidateprime, bestprimes, bestbounds);
 		threshold = threshold + 1000;
 	}
 	return threshold;
@@ -99,8 +120,12 @@ int main() {
 	for (int i = 0; i < 100; i++)
 		for (int j = 0; j < 100; j++)
 			bestprimes[i][j] = 0;
+	long long bestbounds[100][100];
+	for (int i = 0; i < 100; i++)
+		for (int j = 0; j < 100; j++)
+			bestprimes[i][j] = 0;
 
-	long long startrange = readBestPrimes(bestprimes);
+	long long startrange = readBestPrimes(bestprimes, bestbounds);
 	// look for primes and use them to color a list
 	long long threshold = startrange + 1000;
 	for (long long candidateprime = startrange;;
@@ -109,7 +134,7 @@ int main() {
 			if (verbose)
 				cout << "Prime: " << candidateprime << endl;
 			threshold = writeEveryThousand(candidateprime, threshold,
-					bestprimes);
+					bestprimes, bestbounds);
 			//use prime to color the list
 			long long* colors = NULL;
 			colors = new long long[(unsigned int) candidateprime - 1 + 20];
@@ -203,6 +228,7 @@ int main() {
 						if (candidateprime > bestprimes[numcolors][length])
 							bestprimes[numcolors][length] = candidateprime;
 					}
+					// Only try one primitive root per prime
 					break;
 				}
 			}
