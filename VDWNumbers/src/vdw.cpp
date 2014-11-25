@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <cstdlib>
+#include <ctime>
 using namespace std;
 bool verbose = false;
 
@@ -17,23 +18,16 @@ void writeBestPrimes(long long candidateprime, long long bestprimes[100][100],
 	outputfile.open("vdwtable.csv");
 	if (outputfile.is_open())
 		outputfile << candidateprime << endl;
-
 	for (int lengths = 3; lengths < 20; lengths++) {
-		for (int color = 2; color < 10; color++) {
-			if (outputfile.is_open()) {
-				outputfile << bestprimes[color][lengths] << ",";
-			}
-		}
+		for (int color = 2; color < 10; color++)
+			outputfile << bestprimes[color][lengths] << ",";
 		outputfile << endl;
 	}
 	outputfile << "-1" << endl;
 	for (int lengths = 3; lengths < 20; lengths++) {
-		for (int color = 2; color < 10; color++) {
-			if (outputfile.is_open()) {
-				outputfile << (bestprimes[color][lengths] * (lengths-1)+1) << ",";
-//				outputfile << bestbounds[color][lengths] << ",";
-			}
-		}
+		for (int color = 2; color < 10; color++)
+			outputfile << (bestprimes[color][lengths] * (lengths - 1) + 1)
+					<< ",";
 		outputfile << endl;
 	}
 	outputfile.close();
@@ -59,17 +53,16 @@ long long readBestPrimes(long long bestprimes[100][100],
 		bool foundBestBounds = false;
 		while (inputfile) {
 			string s;
-			if (!getline(inputfile, s)) {
+			if (!getline(inputfile, s))
 				break;
-			}
 			istringstream ss(s);
-			cout<<"Line:"<<s<<endl;
+//			cout << "Line:" << s << endl;
 			while (ss) {
 				if (!getline(ss, s, ',')) {
 					color = 2;
 					break;
 				}
-				if(atoi(s.c_str())==-1) {
+				if (atoi(s.c_str()) == -1) {
 					foundBestBounds = true;
 					lengths = 2;
 					continue;
@@ -82,7 +75,6 @@ long long readBestPrimes(long long bestprimes[100][100],
 				color++;
 			}
 			lengths++;
-
 		}
 		inputfile.close();
 	} else {
@@ -94,6 +86,7 @@ long long readBestPrimes(long long bestprimes[100][100],
 
 bool isPrime(long long candidateprime) {
 	// verify that candidateprime has no divisors>1
+
 	for (long long divisor = 2;
 			divisor <= sqrt((long double) (candidateprime)) + 1; divisor++) {
 		if (candidateprime % divisor == 0) {
@@ -114,126 +107,116 @@ long long writeEveryThousand(long long candidateprime, long long threshold,
 }
 
 int main() {
-
-	long long maxnumcolors = 6;
-	long long bestprimes[100][100];
-	for (int i = 0; i < 100; i++)
-		for (int j = 0; j < 100; j++)
-			bestprimes[i][j] = 0;
-	long long bestbounds[100][100];
-	for (int i = 0; i < 100; i++)
-		for (int j = 0; j < 100; j++)
-			bestprimes[i][j] = 0;
-
-	long long startrange = readBestPrimes(bestprimes, bestbounds);
+	long long maxNumColors = 6;
+	long long bestPrimes[100][100];
+	long long bestBounds[100][100];
+//	for (int i = 0; i < 100; i++)
+//		for (int j = 0; j < 100; j++) {
+//			bestPrimes[i][j] = 0;
+//			bestBounds[i][j] = 0;
+//		}
+	long long startRange = readBestPrimes(bestPrimes, bestBounds);
 	// look for primes and use them to color a list
-	long long threshold = startrange + 1000;
-	for (long long candidateprime = startrange;;
-			candidateprime = candidateprime + 2) {
-		if (isPrime(candidateprime)) {
-			if (verbose)
-				cout << "Prime: " << candidateprime << endl;
-			threshold = writeEveryThousand(candidateprime, threshold,
-					bestprimes, bestbounds);
+	long long threshold = startRange + 1000;
+	int counter = 0;
+	clock_t begin3 = clock();
+	for (long long candidatePrime = startRange;;
+			candidatePrime = candidatePrime + 2) {
+		if (isPrime(candidatePrime)) {
+			clock_t end3 = clock();
+			cout << "Primes:" << (end3 - begin3) << endl;
+
+			counter++;
+			if (counter > 8)
+				break;
+			threshold = writeEveryThousand(candidatePrime, threshold,
+					bestPrimes, bestBounds);
 			//use prime to color the list
-			long long* colors = NULL;
-			colors = new long long[(unsigned int) candidateprime - 1 + 20];
-			for (long long i = 1; i < candidateprime; i++)
-				colors[i] = 0;
+			long long* powersOfPrimitiveRootModp =
+					new long long[(unsigned int) candidatePrime - 1 + 20];
 			//find a primitive root of the prime
-			for (long long candidateroot = 2;
-					candidateroot < candidateprime - 1; candidateroot++) {
-				if (verbose)
-					cout << "Candidate root mod " << candidateprime << ": "
-							<< candidateroot << endl;
-				colors[candidateroot] = 1;
-				bool isroot = true;
-				long long power = candidateroot;
-				// Compute color series and check primitive root simultaneously
-				for (long long exponent = 2; exponent <= candidateprime - 1;
+			for (long long candidateRoot = 2;
+					candidateRoot < candidatePrime - 1; candidateRoot++) {
+				powersOfPrimitiveRootModp[candidateRoot] = 1;
+				bool isRoot = true;
+				long long power = candidateRoot;
+				// Compute powers[] of the root and check primitive root simultaneously
+				clock_t begin = clock();
+
+				for (long long exponent = 2; exponent <= candidatePrime - 1;
 						exponent++) {
-					power = (power * candidateroot) % candidateprime;
-					if (verbose)
-						cout << candidateroot << "^" << exponent << "=" << power
-								<< ";";
-					if (power == 1 && (exponent < candidateprime - 1)) {
-						isroot = false;
-						if (verbose)
-							cout << endl << "Not a primitive root mod "
-									<< candidateprime << ": " << candidateroot
-									<< endl;
+					power = (power * candidateRoot) % candidatePrime;
+					if (power == 1 && (exponent < candidatePrime - 1)) {
+						isRoot = false;
 						break;
 					}
-					colors[power] = exponent;
+					powersOfPrimitiveRootModp[power] = exponent;
 				}
-				if (isroot) {
-					if (verbose)
-						cout << endl << "Primitive root found mod "
-								<< candidateprime << ": " << candidateroot
-								<< endl;
+				clock_t end = clock();
+				cout << "Powers:" << (end - begin) << endl;
+				if (isRoot) {
 					// check conditions
-					//break;
-					long long* lastentry = NULL;
-					lastentry = new long long[(unsigned int) maxnumcolors + 1];
-					long long* longestsequence = NULL;
-					longestsequence = new long long[(unsigned int) maxnumcolors
-							+ 1];
-					long long* thissequence = NULL;
-					thissequence =
-							new long long[(unsigned int) maxnumcolors + 1];
-					long long* sequencefromone = NULL;
-					sequencefromone = new long long[(unsigned int) maxnumcolors
-							+ 1];
-					long long numcolors;
-					for (numcolors = 2; numcolors <= maxnumcolors;
-							numcolors++) {
-						lastentry[numcolors] = colors[1] % numcolors;
-						longestsequence[numcolors] = 0;
-						thissequence[numcolors] = 1;
-						sequencefromone[numcolors] = 1;
+					long long* lengthOfLongestSequence =
+							new long long[(unsigned int) maxNumColors + 1];
+					long long* lengthOfThisSequence =
+							new long long[(unsigned int) maxNumColors + 1];
+//					long long* sequenceFromOne =
+//							new long long[(unsigned int) maxNumColors + 1];
+					long long numColors;
+					long long difference;
+					for (numColors = 2; numColors <= maxNumColors;
+							numColors++) {
+						lengthOfLongestSequence[numColors] = 0;
+						lengthOfThisSequence[numColors] = 1;
+//						sequenceFromOne[numColors] = 1;
 					}
-					for (long long position = 2; position <= candidateprime - 1;
+					clock_t begin2 = clock();
+					for (long long position = 2; position <= candidatePrime - 1;
 							position++) {
-						for (numcolors = 2; numcolors <= maxnumcolors;
-								numcolors++) {
-							if ((colors[position] % numcolors)
-									== lastentry[numcolors]) {
-								thissequence[numcolors]++;
+						difference = powersOfPrimitiveRootModp[position]
+								- powersOfPrimitiveRootModp[position - 1];
+						for (numColors = 2; numColors <= maxNumColors;
+								numColors++)
+							// If the color at this position is the same as the last position
+							if (difference % numColors == 0) {
+								lengthOfThisSequence[numColors]++;
 							} else {
-								if (longestsequence[numcolors] == 0)
-									sequencefromone[numcolors] =
-											thissequence[numcolors];
-								if (thissequence[numcolors]
-										> longestsequence[numcolors])
-									longestsequence[numcolors] =
-											thissequence[numcolors];
-								lastentry[numcolors] = colors[position]
-										% numcolors;
-								thissequence[numcolors] = 1;
+//								if (lengthOfLongestSequence[numColors] == 0)
+//									sequenceFromOne[numColors] =
+//											lengthOfThisSequence[numColors];
+								lengthOfLongestSequence[numColors] = max(
+										lengthOfLongestSequence[numColors],
+										lengthOfThisSequence[numColors]);
+								lengthOfThisSequence[numColors] = 1;
 							}
-						}
 					}
-					for (numcolors = 2; numcolors <= maxnumcolors;
-							numcolors++) {
-						if ((candidateprime % numcolors) != 1)
+					clock_t end2 = clock();
+					cout << "Sequences:" << (end2 - begin2) << endl;
+					for (numColors = 2; numColors <= maxNumColors;
+							numColors++) {
+						if ((candidatePrime % numColors) != 1)
 							continue;
 						long long length = 0;
-						if ((colors[candidateprime - 1] % numcolors) == 0) {
-							length = max(longestsequence[numcolors] + 1,
-									sequencefromone[numcolors] * 2 + 2);
-						} else {
-							length = max(longestsequence[numcolors] + 1,
-									sequencefromone[numcolors] + 2);
-						}
-						if (candidateprime > bestprimes[numcolors][length])
-							bestprimes[numcolors][length] = candidateprime;
+						length = lengthOfLongestSequence[numColors] + 1;
+//						if ((powersOfPrimitiveRootModp[candidatePrime - 1]
+//								% numColors) == 0) {
+//							length = max(lengthOfLongestSequence[numColors] + 1,
+//									sequenceFromOne[numColors] * 2 + 2);
+//						} else {
+//							length = max(lengthOfLongestSequence[numColors] + 1,
+//									sequenceFromOne[numColors] + 2);
+//						}
+						if (candidatePrime > bestPrimes[numColors][length])
+							bestPrimes[numColors][length] = candidatePrime;
 					}
 					// Only try one primitive root per prime
 					break;
 				}
 			}
-			delete[] colors;
-			colors = NULL;
+			delete[] powersOfPrimitiveRootModp;
+			powersOfPrimitiveRootModp = NULL;
+			begin3 = clock();
+
 		}
 	}
 	return 0;
