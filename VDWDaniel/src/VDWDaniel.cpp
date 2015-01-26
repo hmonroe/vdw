@@ -7,7 +7,7 @@
 using namespace std;
 
 int main() {
-	// creates array of best primes of each and initializes it to zero
+	// creates array of best primes of each length and initializes it to zero
 	int bestPrimes[100];
 	for (int i = 0; i < 100; i++)
 		bestPrimes[i] = 0;
