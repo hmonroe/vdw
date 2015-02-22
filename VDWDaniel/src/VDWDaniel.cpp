@@ -32,13 +32,14 @@ long long fastExponent(long long a, long long b, long long prime) {
 //finds the least primitive root of parameter prime
 long long getFactorRoot(long long prime) {
 	long long primefactors[256]; // number of prime factors is less than number of bits
-	long long guess, curNumber,  i, foundone;
-	long long factorcount,  curPrime, factordown, failure;
+	long long guess, curNumber, i, foundone;
+	long long factorcount, curPrime, factordown, failure;
 	factordown = (prime - 1);
 	factorcount = 0;
 	for (curPrime = 2;; curPrime++) {
 		bool isPrime = true;
-		for (long long possibleFactor = 2; possibleFactor < sqrt(curPrime) + 1; possibleFactor++) {
+		for (long long possibleFactor = 2; possibleFactor < sqrt(curPrime) + 1;
+				possibleFactor++) {
 			if (curPrime % possibleFactor == 0 && curPrime != 2) {
 				isPrime = false;
 				break;
@@ -66,7 +67,8 @@ long long getFactorRoot(long long prime) {
 	while (!failure) {
 		foundone = 0;
 		for (i = 0; i < factorcount; ++i) {
-			curNumber = fastExponent(guess, ((prime - 1) / primefactors[i]), prime);
+			curNumber = fastExponent(guess, ((prime - 1) / primefactors[i]),
+					prime);
 			if (curNumber == 1) {
 				foundone = 1;
 				break;
@@ -81,7 +83,8 @@ long long getFactorRoot(long long prime) {
 	return guess;
 }
 
-void savebestprimes(long long lastPossiblePrime, int colors, long long bestPrimes[100][13]) {
+void savebestprimes(long long lastPossiblePrime, int colors,
+		long long bestPrimes[100][13]) {
 // Writes the best primes into daniel.csv
 	ofstream outputfile;
 	outputfile.open("daniel.csv");
@@ -90,7 +93,8 @@ void savebestprimes(long long lastPossiblePrime, int colors, long long bestPrime
 			outputfile << lastPossiblePrime << endl;
 
 		for (int i = 3; i < 24; i++) {
-			for (int numberofcolors = 2; numberofcolors < colors; numberofcolors++) {
+			for (int numberofcolors = 2; numberofcolors < colors;
+					numberofcolors++) {
 				outputfile << bestPrimes[i][numberofcolors];
 				outputfile << ",";
 			}
@@ -142,13 +146,14 @@ int main() {
 	}
 	int counter = 0;
 	for (long long possiblePrime = startValue;; possiblePrime++) {
-		if (counter++ >=500) {
+		if (counter++ >= 50) {
 			counter = 0;
 			savebestprimes(possiblePrime, colors, bestPrimes);
 			cout << possiblePrime << endl;
 		}
 		bool isPrime = true;
-		for (long long possibleFactor = 2; possibleFactor < sqrt(possiblePrime) + 1; possibleFactor++)
+		for (long long possibleFactor = 2;
+				possibleFactor < sqrt(possiblePrime) + 1; possibleFactor++)
 			if (possiblePrime % possibleFactor == 0) {
 				isPrime = false;
 				break;
@@ -160,53 +165,83 @@ int main() {
 				powers[possibleRoot] = 1;
 				long long accumulatedPower = possibleRoot;
 				bool isPrimitive = true;
-				for (long long exponent = 2; exponent <= possiblePrime - 1; exponent++) {
-					accumulatedPower = (possibleRoot * accumulatedPower) % possiblePrime;
-					if ((accumulatedPower == 1) && (exponent < possiblePrime - 1)) {
+				for (long long exponent = 2; exponent <= possiblePrime - 1;
+						exponent++) {
+					accumulatedPower = (possibleRoot * accumulatedPower)
+							% possiblePrime;
+					if ((accumulatedPower == 1)
+							&& (exponent < possiblePrime - 1)) {
 						isPrimitive = false;
 						break;
 					}
 					powers[accumulatedPower] = exponent;
 				}
 				if (!isPrimitive) {
-					cout << possibleRoot << " is not a primitive root of " << possiblePrime << endl;
+					cout << possibleRoot << " is not a primitive root of "
+							<< possiblePrime << endl;
 					return 0;
 				}
 				if (isPrimitive) {
-					long long* finalLength = new long long[(unsigned int) colors + 1];
-					long long* currentLength = new long long[(unsigned int) colors + 1];
-					long long* sequenceFromOne = new long long[(unsigned int) colors + 1];
-					for (int numberofcolors = 0; numberofcolors < colors; numberofcolors++) {
+					long long* finalLength = new long long[(unsigned int) colors
+							+ 1];
+					long long* currentLength =
+							new long long[(unsigned int) colors + 1];
+					long long* sequenceFromOne =
+							new long long[(unsigned int) colors + 1];
+					for (int numberofcolors = 0; numberofcolors < colors;
+							numberofcolors++) {
 						currentLength[numberofcolors] = 1;
 						finalLength[numberofcolors] = 0;
 						sequenceFromOne[numberofcolors] = 1;
 					}
 					int numberofcolors = 2;
-					for (long long position = 2; position <= possiblePrime - 1; position++) {
-						for (numberofcolors = 2; numberofcolors < colors; numberofcolors++) {
-							if ((powers[position] % numberofcolors) == (powers[position - 1] % numberofcolors)) {
+					for (long long position = 2; position <= possiblePrime - 1;
+							position++) {
+						for (numberofcolors = 2; numberofcolors < colors;
+								numberofcolors++) {
+							if ((powers[position] % numberofcolors)
+									== (powers[position - 1] % numberofcolors)) {
 								currentLength[numberofcolors]++;
 							} else {
 								if (finalLength[numberofcolors] == 0)
-									sequenceFromOne[numberofcolors] = currentLength[numberofcolors];
-								finalLength[numberofcolors] = max(finalLength[numberofcolors], currentLength[numberofcolors]);
+									sequenceFromOne[numberofcolors] =
+											currentLength[numberofcolors];
+								finalLength[numberofcolors] = max(
+										finalLength[numberofcolors],
+										currentLength[numberofcolors]);
 								currentLength[numberofcolors] = 1;
 							}
 						}
 					}
 					// If possiblePrime is greater then the previous bestPrime for that length,
 					// set the bestPrimes to the possiblePrime
-					for (numberofcolors = 2; numberofcolors < colors; numberofcolors++) {
+					for (numberofcolors = 2; numberofcolors < colors;
+							numberofcolors++) {
 						if ((possiblePrime % numberofcolors) != 1)
 							continue;
 						long long length = 0;
+						cout <<"Final Length:"<<numberofcolors<<":"<<finalLength[numberofcolors]<<endl;
 						length = finalLength[numberofcolors] + 1;
 						if ((powers[possiblePrime - 1] % numberofcolors) == 0) {
-							length = max(finalLength[numberofcolors] + 1, sequenceFromOne[numberofcolors] * 2 + 2);
+							length = max(finalLength[numberofcolors] + 1,
+									sequenceFromOne[numberofcolors] * 2 + 2);
 						} else {
-							length = max(finalLength[numberofcolors] + 1, sequenceFromOne[numberofcolors] + 2);
+							length = max(finalLength[numberofcolors] + 1,
+									sequenceFromOne[numberofcolors] + 2);
 						}
-						if (possiblePrime > bestPrimes[length][numberofcolors]) {
+						if (length < 24
+								&& possiblePrime
+										> bestPrimes[length][numberofcolors]) {
+							cout << "Found better prime:" << length << ":"
+									<< numberofcolors << ":" << possiblePrime
+									<< endl;
+							if (bestPrimes[length][numberofcolors] < 10000 && length<5) {
+								cout << "Found bug" << endl;
+								return 0;
+								// 8284951
+								// 10717548
+
+							}
 							bestPrimes[length][numberofcolors] = possiblePrime;
 						}
 					}
