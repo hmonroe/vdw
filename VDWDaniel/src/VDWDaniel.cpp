@@ -142,7 +142,7 @@ int main() {
 	}
 	int counter = 0;
 	for (long long possiblePrime = startValue;; possiblePrime++) {
-		if (counter++ >= 10) {
+		if (counter++ >=500) {
 			counter = 0;
 			savebestprimes(possiblePrime, colors, bestPrimes);
 			cout << possiblePrime << endl;
