@@ -459,10 +459,10 @@ void getPowerProgression(int power, int root, long prime, char dest[]) {
  * to find a prime that can be zipped in order to create a better
  * progression-free partition
  */
-int zipit(int power, int prog, long prime, int root) {
+int zipit(int power, int prog, long prime, int root,int zip2) {
 //	fprintf(stderr,"%d,%d,%d,%lu\n", power, prog,root,prime);
 
-	int zip2, shortcut;
+	int  shortcut;
 	if( prime> 40000000 || prog>18) {
 		return 0;
 	}
@@ -472,8 +472,7 @@ int zipit(int power, int prog, long prime, int root) {
 
 	char* zipped = new char[2 * prime + 1];
 	char* zipped2;
-	zipped2=0;
-	if(zipped2!=0)
+	if(zip2!=0)
 		zipped2= new char[4 * prime + 1];
 	char* partition = new char[((zip2+1) * prime) * (prog - 1) + 1];
 	char* destination = new char[prime];
@@ -841,14 +840,16 @@ int main(int argc, char **argv) {
 							// found best prime
 							bestPrimes[length][numberofcolors] = possiblePrime;
 						}
+						// zip once
 						if (numberofcolors % 2 == 0 && zip == 1 && length < rows && possiblePrime * 2 > bestPrimes[length][numberofcolors]) {
-//							fprintf(stderr,"%llu,%llu,%d,%d\n",  possiblePrime, possibleRoot,numberofcolors,length);
-							if(	zipit((int)numberofcolors, (int)length, (long)possiblePrime, (int)possibleRoot)) 
+							if(	zipit((int)numberofcolors, (int)length, (long)possiblePrime, (int)possibleRoot,0)) 
 								bestPrimes[length][numberofcolors] = possiblePrime * 2;
 						}
-
-									
-						
+						// zip twice
+//						if (numberofcolors % 2 == 0 && zip == 1 && length < rows && possiblePrime * 4 > bestPrimes[length][numberofcolors]) {
+//							if(	zipit((int)numberofcolors, (int)length, (long)possiblePrime, (int)possibleRoot,1)) 
+//								bestPrimes[length][numberofcolors] = possiblePrime * 4;
+//						}
 					}
 					delete[] finalLength;
 					finalLength = NULL;
